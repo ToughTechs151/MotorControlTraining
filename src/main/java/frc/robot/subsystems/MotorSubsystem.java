@@ -8,6 +8,10 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.MotorConstants;
 
@@ -36,6 +40,9 @@ public class MotorSubsystem extends SubsystemBase implements AutoCloseable {
     this.encoder = motorHardware.encoder;
 
     initializeMotor();
+
+    ShuffleboardTab sbMotorTab = Shuffleboard.getTab("Motor");
+    sbMotorTab.addNumber("Motor Voltage", this::getVoltageCommand);
   }
 
   private void initializeMotor() {
@@ -69,7 +76,8 @@ public class MotorSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     // Put periodic functions like dashboards and data logging here.
-
+    SmartDashboard.putNumber("Motor Voltage", getVoltageCommand());
+    SmartDashboard.putNumber("Motor Velocity", getSpeed());
   }
 
   /** Set the output voltage to the motor. */
@@ -104,6 +112,12 @@ public class MotorSubsystem extends SubsystemBase implements AutoCloseable {
   /** Returns the motor current. */
   public double getCurrent() {
     return motor.getOutputCurrent();
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    super.initSendable(builder);
+    builder.addDoubleProperty("Velocity", this::getSpeed, null);
   }
 
   /** Close any objects that support it. */
