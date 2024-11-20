@@ -8,7 +8,10 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -34,6 +37,8 @@ public class MotorSubsystem extends SubsystemBase implements AutoCloseable {
 
   private double motorVoltageCommand = 0.0;
 
+  private DoubleLogEntry positionLog;
+
   /** Create a new motorSubsystem for open loop voltage control. */
   public MotorSubsystem(Hardware motorHardware) {
     this.motor = motorHardware.motor;
@@ -43,6 +48,10 @@ public class MotorSubsystem extends SubsystemBase implements AutoCloseable {
 
     ShuffleboardTab sbMotorTab = Shuffleboard.getTab("Motor");
     sbMotorTab.addNumber("Motor Voltage", this::getVoltageCommand);
+
+    // Set up custom log entries
+    DataLog log = DataLogManager.getLog();
+    positionLog = new DoubleLogEntry(log, "/motor/position");
   }
 
   private void initializeMotor() {
@@ -78,12 +87,15 @@ public class MotorSubsystem extends SubsystemBase implements AutoCloseable {
     // Put periodic functions like dashboards and data logging here.
     SmartDashboard.putNumber("Motor Voltage", getVoltageCommand());
     SmartDashboard.putNumber("Motor Velocity", getSpeed());
+
+    positionLog.append(encoder.getPosition());
   }
 
   /** Set the output voltage to the motor. */
   public void setVoltage(double voltage) {
     motor.setVoltage(voltage);
     motorVoltageCommand = voltage; // Save the output for simulation
+    DataLogManager.log("Voltage set: " + voltage);
   }
 
   /**
