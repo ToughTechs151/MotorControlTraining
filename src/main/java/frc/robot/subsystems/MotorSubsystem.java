@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.MotorConstants;
 
@@ -96,6 +97,13 @@ public class MotorSubsystem extends SubsystemBase implements AutoCloseable {
     motor.setVoltage(voltage);
     motorVoltageCommand = voltage; // Save the output for simulation
     DataLogManager.log("Voltage set: " + voltage);
+  }
+
+  /**
+   * Factory method to create a command to set motor voltage while runnning and set to 0 when done.
+   */
+  public Command runWithVoltage(double voltage) {
+    return startEnd(() -> setVoltage(voltage), () -> setVoltage(0.0));
   }
 
   /**

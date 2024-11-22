@@ -7,7 +7,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OIConstants;
 import frc.robot.subsystems.MotorSubsystem;
@@ -42,20 +43,66 @@ public class RobotContainer {
 
   /** Use this method to define your button->command mappings. */
   private void configureButtonBindings() {
+
     // Run the motor at the defined voltage (+/-) while the right / left trigger is held.
     operatorController
         .rightTrigger()
-        .onTrue(
-            new InstantCommand(() -> motor.setVoltage(Constants.MotorConstants.VOLTAGE_COMMAND))
-                .withName("Motor: Run Forward"))
-        .onFalse(new InstantCommand(() -> motor.setVoltage(0.0)));
+        .whileTrue(
+            new StartEndCommand(
+                    () -> motor.setVoltage(Constants.MotorConstants.VOLTAGE_COMMAND),
+                    () -> motor.setVoltage(0.0),
+                    motor)
+                .withName("Motor: Run Forward"));
 
     operatorController
         .leftTrigger()
+        .whileTrue(
+            new StartEndCommand(
+                    () -> motor.setVoltage(-Constants.MotorConstants.VOLTAGE_COMMAND),
+                    () -> motor.setVoltage(0.0),
+                    motor)
+                .withName("Motor: Run Reverse"));
+
+    operatorController
+        .rightBumper()
+        .whileTrue(
+            motor
+                .runWithVoltage(Constants.MotorConstants.VOLTAGE_COMMAND)
+                .withName("Motor: Run Forward Factory"));
+
+    operatorController
+        .leftBumper()
+        .whileTrue(
+            motor
+                .runWithVoltage(-Constants.MotorConstants.VOLTAGE_COMMAND)
+                .withName("Motor: Run Reverse Factory"));
+
+    operatorController
+        .a()
         .onTrue(
-            new InstantCommand(() -> motor.setVoltage(-Constants.MotorConstants.VOLTAGE_COMMAND))
-                .withName("Motor: Run Forward"))
-        .onFalse(new InstantCommand(() -> motor.setVoltage(0.0)));
+            motor
+                .runWithVoltage(Constants.MotorConstants.VOLTAGE_COMMAND)
+                .withTimeout(5.0)
+                .withName("Motor: Run 5 Seconds"));
+
+    operatorController
+        .b()
+        .onTrue(
+            Commands.sequence(
+                    Commands.print(
+                        "*** Set motor to " + 0.25 * Constants.MotorConstants.VOLTAGE_COMMAND),
+                    motor
+                        .runWithVoltage(0.25 * Constants.MotorConstants.VOLTAGE_COMMAND)
+                        .withTimeout(2.0),
+                    Commands.print(
+                        "*** Set motor to " + 0.5 * Constants.MotorConstants.VOLTAGE_COMMAND),
+                    motor
+                        .runWithVoltage(0.5 * Constants.MotorConstants.VOLTAGE_COMMAND)
+                        .withTimeout(2.0),
+                    Commands.print("*** Set motor to " + Constants.MotorConstants.VOLTAGE_COMMAND),
+                    motor.runWithVoltage(Constants.MotorConstants.VOLTAGE_COMMAND).withTimeout(2.0))
+                .withName("Step Up"));
+
   }
 
   /**
