@@ -96,7 +96,7 @@ public class MotorSubsystem extends SubsystemBase implements AutoCloseable {
   public void setVoltage(double voltage) {
     motor.setVoltage(voltage);
     motorVoltageCommand = voltage; // Save the output for simulation
-    DataLogManager.log("Voltage set: " + voltage);
+    // DataLogManager.log("Voltage set: " + voltage);
   }
 
   /**

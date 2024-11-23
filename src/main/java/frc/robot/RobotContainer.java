@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -103,6 +104,14 @@ public class RobotContainer {
                     motor.runWithVoltage(Constants.MotorConstants.VOLTAGE_COMMAND).withTimeout(2.0))
                 .withName("Step Up"));
 
+    operatorController.x().whileTrue(new RunFixed(1.0, motor));
+
+    motor.setDefaultCommand(
+        new RunJoystick(
+            () ->
+                -Constants.MotorConstants.VOLTAGE_COMMAND
+                    * MathUtil.applyDeadband(operatorController.getLeftY(), 0.1),
+            motor));
   }
 
   /**
